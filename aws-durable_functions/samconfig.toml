@@ -1,0 +1,19 @@
+# AWS SAM CLI Configuration File
+# https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-config.html
+
+version = 0.1
+
+[default.global.parameters]
+stack_name = "reservation-workflow-stack"
+region = "us-east-2"
+
+[default.deploy.parameters]
+capabilities = "CAPABILITY_IAM"
+confirm_changeset = true
+resolve_s3 = true
+# Important: Deploy to us-east-2 for durable functions support
+region = "us-east-2"
+parameter_overrides = "Environment=\"dev\""
+s3_prefix = "reservation-workflow-stack"
+image_repositories = []
+

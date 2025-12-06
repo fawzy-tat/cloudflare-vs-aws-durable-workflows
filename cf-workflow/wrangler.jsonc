@@ -1,0 +1,35 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "cf-workflow",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-02-11",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+
+  // Workflow binding for the ReservationWorkflow
+  "workflows": [
+    {
+      "name": "reservation-workflow",
+      "binding": "RESERVATION_WORKFLOW",
+      "class_name": "ReservationWorkflow"
+    }
+  ],
+
+  // KV namespace for storing reservation data
+  // Note: You need to create this KV namespace first:
+  // npx wrangler kv namespace create RESERVATIONS_KV
+  // Then update the "id" field with the returned namespace ID
+  "kv_namespaces": [
+    {
+      "binding": "RESERVATIONS_KV",
+      "id": "<YOUR_KV_NAMESPACE_ID>"
+    }
+  ]
+
+  // For local development, you can use:
+  // npx wrangler kv namespace create RESERVATIONS_KV --preview
+  // And add a preview_id field
+}

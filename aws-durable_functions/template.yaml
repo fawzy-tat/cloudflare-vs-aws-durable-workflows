@@ -1,0 +1,88 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  AWS Lambda Durable Functions - Reservation Workflow Demo
+  Demonstrates durable execution with checkpointing, steps, and waits.
+
+# ============================================================================
+# NOTE: SAM CLI's `sam build` doesn't recognize DurableConfig yet (v1.149.0).
+# Workaround: Build manually with esbuild, then use `sam deploy` directly.
+# The server-side SAM transform DOES support DurableConfig.
+# ============================================================================
+
+# ============================================================================
+# Parameters
+# ============================================================================
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - prod
+    Description: Environment name for resource naming
+
+# ============================================================================
+# Resources
+# ============================================================================
+Resources:
+  # --------------------------------------------------------------------------
+  # Lambda Function with Durable Execution
+  # --------------------------------------------------------------------------
+  ReservationWorkflowFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "reservation-workflow-${Environment}"
+      Description: Durable reservation workflow with 15-minute hold and auto-expiry
+      CodeUri: reservation-workflow/dist/
+      Handler: app.handler
+      Runtime: nodejs24.x
+      Architectures:
+        - x86_64
+      Timeout: 900
+      MemorySize: 256
+
+      # -----------------------------------------------------------------------
+      # DURABLE CONFIG - This is the key setting!
+      # Enables checkpoint/replay execution model for long-running workflows
+      # -----------------------------------------------------------------------
+      DurableConfig:
+        ExecutionTimeout: 3600 # 1 hour max execution time
+        RetentionPeriodInDays: 7 # Keep execution history for 7 days
+
+      # Auto-publish creates versions (required for durable execution invocation)
+      AutoPublishAlias: live
+
+      # IAM permissions for durable execution
+      Policies:
+        - Version: "2012-10-17"
+          Statement:
+            - Effect: Allow
+              Action:
+                - lambda:CheckpointDurableExecution
+                - lambda:GetDurableExecutionState
+              Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:reservation-workflow-${Environment}:*"
+
+      Environment:
+        Variables:
+          NODE_ENV: !Ref Environment
+
+      Tags:
+        Project: aws-vs-cf-demo
+        Feature: durable-functions
+
+# ============================================================================
+# Outputs
+# ============================================================================
+Outputs:
+  FunctionName:
+    Description: Lambda Function Name
+    Value: !Ref ReservationWorkflowFunction
+
+  FunctionArn:
+    Description: Lambda Function ARN
+    Value: !GetAtt ReservationWorkflowFunction.Arn
+
+  AliasArn:
+    Description: Lambda Alias ARN (use this for durable execution invocation)
+    Value: !Ref ReservationWorkflowFunction.Alias

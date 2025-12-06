@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+.build/
+dist/
+.aws-sam/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Private documentation
+docs/
+
+# Cloudflare
+.wrangler/
+.dev.vars
+
+# AWS SAM
+samconfig.toml.bak
+
+# Lock files (we use pnpm)
+package-lock.json
+yarn.lock
+
